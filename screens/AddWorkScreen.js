@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   View,
@@ -13,7 +13,11 @@ import {
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-export default function AddWorkScreen({ onAddTask }) {
+export default function AddWorkScreen({
+  onAddTask,
+  onUpdateTask,
+  initialTask
+}) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -27,46 +31,60 @@ export default function AddWorkScreen({ onAddTask }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  // Load existing task details when editing
+  useEffect(() => {
+
+    if (initialTask) {
+
+      setTitle(initialTask.title);
+      setDescription(initialTask.description || '');
+      setCategory(initialTask.category || 'Study');
+      setPriority(initialTask.priority || 'Medium');
+
+      const taskDate = new Date(`${initialTask.date}T00:00:00`);
+      const taskTime = new Date(`2000-01-01T${initialTask.time}:00`);
+
+      if (!isNaN(taskDate.getTime())) {
+        setDate(taskDate);
+      }
+
+      if (!isNaN(taskTime.getTime())) {
+        setTime(taskTime);
+      }
+
+    } else {
+
+      // Reset form for a new task
+      resetForm();
+
+    }
+
+  }, [initialTask]);
+
   // Format date
   const formatDate = (value) => {
+
     const year = value.getFullYear();
     const month = String(value.getMonth() + 1).padStart(2, '0');
     const day = String(value.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+
   };
 
   // Format time
   const formatTime = (value) => {
+
     const hours = String(value.getHours()).padStart(2, '0');
     const minutes = String(value.getMinutes()).padStart(2, '0');
 
     return `${hours}:${minutes}`;
+
   };
 
-  // Save task
-  const saveTask = () => {
+  // Reset form
+  const resetForm = () => {
 
-    if (title.trim() === '') {
-      Alert.alert('Missing Title', 'Please enter a task title.');
-      return;
-    }
-
-    const newTask = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      description: description.trim(),
-      category: category,
-      priority: priority,
-      date: formatDate(date),
-      time: formatTime(time),
-      completed: false,
-    };
-
-    // Send task to App.js
-    onAddTask(newTask);
-
-    // Reset form
     setTitle('');
     setDescription('');
     setCategory('Study');
@@ -74,7 +92,48 @@ export default function AddWorkScreen({ onAddTask }) {
     setDate(new Date());
     setTime(new Date());
 
-    Alert.alert('Success', 'Your task has been saved!');
+  };
+
+  // Save or update task
+  const saveTask = () => {
+
+    if (title.trim() === '') {
+
+      Alert.alert('Missing Title', 'Please enter a task title.');
+      return;
+
+    }
+
+    const updatedTask = {
+
+      id: initialTask ? initialTask.id : Date.now().toString(),
+
+      title: title.trim(),
+      description: description.trim(),
+      category: category,
+      priority: priority,
+      date: formatDate(date),
+      time: formatTime(time),
+
+      completed: initialTask ? initialTask.completed : false,
+
+    };
+
+    if (initialTask) {
+
+      // Update existing task
+      onUpdateTask(updatedTask);
+
+    } else {
+
+      // Add new task
+      onAddTask(updatedTask);
+
+      Alert.alert('Success', 'Your task has been saved!');
+
+    }
+
+    resetForm();
 
   };
 
@@ -82,10 +141,14 @@ export default function AddWorkScreen({ onAddTask }) {
 
     <ScrollView style={styles.container}>
 
-      <Text style={styles.title}>Add New Work</Text>
+      <Text style={styles.title}>
+        {initialTask ? 'Edit Task' : 'Add New Work'}
+      </Text>
 
       <Text style={styles.subtitle}>
-        Plan your next task.
+        {initialTask
+          ? 'Update your task details.'
+          : 'Plan your next task.'}
       </Text>
 
       {/* Task Title */}
@@ -126,11 +189,13 @@ export default function AddWorkScreen({ onAddTask }) {
           mode="date"
           display="default"
           onChange={(event, selectedDate) => {
+
             setShowDatePicker(false);
 
             if (selectedDate) {
               setDate(selectedDate);
             }
+
           }}
         />
 
@@ -153,11 +218,13 @@ export default function AddWorkScreen({ onAddTask }) {
           mode="time"
           display="default"
           onChange={(event, selectedTime) => {
+
             setShowTimePicker(false);
 
             if (selectedTime) {
               setTime(selectedTime);
             }
+
           }}
         />
 
@@ -221,14 +288,14 @@ export default function AddWorkScreen({ onAddTask }) {
 
       </View>
 
-      {/* Save Button */}
+      {/* Save / Update Button */}
       <TouchableOpacity
         style={styles.saveButton}
         onPress={saveTask}
       >
 
         <Text style={styles.saveButtonText}>
-          Save Task
+          {initialTask ? 'Update Task' : 'Save Task'}
         </Text>
 
       </TouchableOpacity>
@@ -236,6 +303,7 @@ export default function AddWorkScreen({ onAddTask }) {
     </ScrollView>
 
   );
+
 }
 
 const styles = StyleSheet.create({

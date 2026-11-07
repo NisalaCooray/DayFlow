@@ -1,4 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
+
 import {
   View,
   Text,
@@ -14,51 +16,103 @@ import AddWorkScreen from './screens/AddWorkScreen';
 import ReportScreen from './screens/ReportScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-
 const STORAGE_KEY = '@dayflow_tasks';
 
 export default function App() {
+
   const [tasks, setTasks] = useState([]);
   const [activeScreen, setActiveScreen] = useState('Home');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
   // Load saved tasks
   useEffect(() => {
+
     const loadTasks = async () => {
+
       try {
+
         const savedTasks = await AsyncStorage.getItem(STORAGE_KEY);
 
         if (savedTasks !== null) {
           setTasks(JSON.parse(savedTasks));
         }
+
       } catch (error) {
+
         console.log('Loading error:', error);
+
       } finally {
+
         setIsLoaded(true);
+
       }
+
     };
 
     loadTasks();
+
   }, []);
 
   // Save tasks whenever they change
   useEffect(() => {
+
     if (isLoaded) {
+
       AsyncStorage.setItem(
         STORAGE_KEY,
         JSON.stringify(tasks)
       ).catch(error => console.log('Saving error:', error));
+
     }
+
   }, [tasks, isLoaded]);
 
   // Add a new task
   const addTask = (newTask) => {
+
     setTasks(previousTasks => [...previousTasks, newTask]);
+
     setActiveScreen('Works');
+
+  };
+
+  // Update an existing task
+  const updateTask = (updatedTask) => {
+
+    setTasks(previousTasks =>
+      previousTasks.map(task =>
+        task.id === updatedTask.id ? updatedTask : task
+      )
+    );
+
+    setEditingTask(null);
+
+    setActiveScreen('Works');
+
+  };
+
+  // Open task for editing
+  const editTask = (task) => {
+
+    setEditingTask(task);
+
+    setActiveScreen('Add');
+
+  };
+
+  // Open a fresh Add Task form
+  const openAddScreen = () => {
+
+    setEditingTask(null);
+
+    setActiveScreen('Add');
+
   };
 
   // Complete or uncomplete a task
   const toggleTask = (taskId) => {
+
     setTasks(previousTasks =>
       previousTasks.map(task =>
         task.id === taskId
@@ -66,49 +120,85 @@ export default function App() {
           : task
       )
     );
+
   };
 
-  //Delete a Task
+  // Delete a task
   const deleteTask = (taskId) => {
+
     setTasks(previousTasks =>
       previousTasks.filter(task => task.id !== taskId)
     );
+
   };
 
+  // Loading screen
   if (!isLoaded) {
+
     return (
+
       <View style={styles.loading}>
+
         <Text style={styles.logo}>DayFlow</Text>
+
         <Text>Loading your tasks...</Text>
+
       </View>
+
     );
+
   }
 
   return (
+
     <View style={styles.container}>
 
       <View style={styles.screen}>
+
+        {/* Home Screen */}
         {activeScreen === 'Home' && (
+
           <HomeScreen tasks={tasks} />
+
         )}
 
+        {/* Works Screen */}
         {activeScreen === 'Works' && (
+
           <WorksScreen
             tasks={tasks}
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
+            onEditTask={editTask}
           />
+
         )}
 
+        {/* Add / Edit Screen */}
         {activeScreen === 'Add' && (
-          <AddWorkScreen onAddTask={addTask} />
+
+          <AddWorkScreen
+            onAddTask={addTask}
+            onUpdateTask={updateTask}
+            initialTask={editingTask}
+          />
+
         )}
 
+        {/* Report Screen */}
         {activeScreen === 'Report' && (
+
           <ReportScreen tasks={tasks} />
+
         )}
 
-        {activeScreen === 'Settings' && <SettingsScreen />}
+        {/* Settings Screen */}
+        {activeScreen === 'Settings' && (
+
+          <SettingsScreen />
+
+        )}
+
       </View>
 
       {/* Bottom Navigation */}
@@ -125,31 +215,54 @@ export default function App() {
           <TouchableOpacity
             key={item.name}
             style={styles.navItem}
-            onPress={() => setActiveScreen(item.name)}
+            onPress={() => {
+
+              if (item.name === 'Add') {
+
+                openAddScreen();
+
+              } else {
+
+                setEditingTask(null);
+                setActiveScreen(item.name);
+
+              }
+
+            }}
           >
+
             <Text style={[
               styles.navIcon,
               activeScreen === item.name && styles.activeNav
             ]}>
+
               {item.icon}
+
             </Text>
 
             <Text style={[
               styles.navText,
               activeScreen === item.name && styles.activeNav
             ]}>
+
               {item.name}
+
             </Text>
+
           </TouchableOpacity>
 
         ))}
 
       </View>
+
     </View>
+
   );
+
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#F5F7FB',
@@ -201,4 +314,5 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     marginBottom: 10,
   },
+
 });

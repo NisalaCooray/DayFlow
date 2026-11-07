@@ -14,6 +14,7 @@ export default function WorksScreen({
   tasks,
   onToggleTask,
   onDeleteTask,
+  onEditTask,
 }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
@@ -82,6 +83,13 @@ export default function WorksScreen({
 
       <View style={styles.buttons}>
         <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => onEditTask(item)}
+        >
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.completeButton}
           onPress={() => onToggleTask(item.id)}
         >
@@ -92,7 +100,7 @@ export default function WorksScreen({
 
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => confirmDelete(item)}
+          onPress={() => onDeleteTask(item.id)}
         >
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
@@ -224,6 +232,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
+  editButton: {
+      flex: 1,
+      backgroundColor: '#F39C12',
+      padding: 10,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
   completeButton: {
     flex: 1,
     backgroundColor: '#4A63E7',
