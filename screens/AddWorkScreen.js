@@ -42,7 +42,7 @@ export default function AddWorkScreen({
       setPriority(initialTask.priority || 'Medium');
 
       const taskDate = new Date(`${initialTask.date}T00:00:00`);
-      const taskTime = new Date(`2000-01-01T${initialTask.time}:00`);
+      const taskTime = new Date(`2000-01-01T${initialTask.time || '00:00'}:00`);
 
       if (!isNaN(taskDate.getTime())) {
         setDate(taskDate);
@@ -54,7 +54,6 @@ export default function AddWorkScreen({
 
     } else {
 
-      // Reset form for a new task
       resetForm();
 
     }
@@ -110,8 +109,8 @@ export default function AddWorkScreen({
 
       title: title.trim(),
       description: description.trim(),
-      category: category,
-      priority: priority,
+      category,
+      priority,
       date: formatDate(date),
       time: formatTime(time),
 
@@ -121,12 +120,10 @@ export default function AddWorkScreen({
 
     if (initialTask) {
 
-      // Update existing task
       onUpdateTask(updatedTask);
 
     } else {
 
-      // Add new task
       onAddTask(updatedTask);
 
       Alert.alert('Success', 'Your task has been saved!');
@@ -137,168 +134,261 @@ export default function AddWorkScreen({
 
   };
 
+  const categories = [
+    { name: 'Study', icon: '📚' },
+    { name: 'Work', icon: '💼' },
+    { name: 'Personal', icon: '👤' },
+    { name: 'Other', icon: '📌' },
+  ];
+
+  const priorities = [
+    { name: 'Low', color: '#16A34A', background: '#E9F8EF' },
+    { name: 'Medium', color: '#D97706', background: '#FFF3E0' },
+    { name: 'High', color: '#DC2626', background: '#FEECEC' },
+  ];
+
   return (
 
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
 
-      <Text style={styles.title}>
-        {initialTask ? 'Edit Task' : 'Add New Work'}
-      </Text>
+      {/* Header */}
+      <View style={styles.header}>
 
-      <Text style={styles.subtitle}>
-        {initialTask
-          ? 'Update your task details.'
-          : 'Plan your next task.'}
-      </Text>
+        <View style={styles.headerIcon}>
+          <Text style={styles.headerIconText}>✎</Text>
+        </View>
 
-      {/* Task Title */}
-      <Text style={styles.label}>Task Title *</Text>
+        <Text style={styles.title}>
+          {initialTask ? 'Edit Task' : 'Add New Task'}
+        </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter task title"
-        value={title}
-        onChangeText={setTitle}
-      />
+        <Text style={styles.subtitle}>
+          {initialTask
+            ? 'Make changes to your task details.'
+            : 'Plan your day and stay organized.'}
+        </Text>
 
-      {/* Description */}
-      <Text style={styles.label}>Description</Text>
+      </View>
 
-      <TextInput
-        style={[styles.input, styles.descriptionInput]}
-        placeholder="Enter task description"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
+      {/* Task Details */}
+      <View style={styles.section}>
 
-      {/* Date */}
-      <Text style={styles.label}>Date</Text>
+        <Text style={styles.sectionTitle}>Task Details</Text>
 
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowDatePicker(true)}
-      >
-        <Text>{formatDate(date)}</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>Task Title *</Text>
 
-      {showDatePicker && (
-
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-
-            setShowDatePicker(false);
-
-            if (selectedDate) {
-              setDate(selectedDate);
-            }
-
-          }}
+        <TextInput
+          style={styles.input}
+          placeholder="What do you need to do?"
+          placeholderTextColor="#A0A0B0"
+          value={title}
+          onChangeText={setTitle}
         />
 
-      )}
+        <Text style={styles.label}>Description</Text>
 
-      {/* Time */}
-      <Text style={styles.label}>Time</Text>
-
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowTimePicker(true)}
-      >
-        <Text>{formatTime(time)}</Text>
-      </TouchableOpacity>
-
-      {showTimePicker && (
-
-        <DateTimePicker
-          value={time}
-          mode="time"
-          display="default"
-          onChange={(event, selectedTime) => {
-
-            setShowTimePicker(false);
-
-            if (selectedTime) {
-              setTime(selectedTime);
-            }
-
-          }}
+        <TextInput
+          style={[styles.input, styles.descriptionInput]}
+          placeholder="Add some details about your task..."
+          placeholderTextColor="#A0A0B0"
+          value={description}
+          onChangeText={setDescription}
+          multiline
         />
 
-      )}
+      </View>
+
+      {/* Date and Time */}
+      <View style={styles.section}>
+
+        <Text style={styles.sectionTitle}>Schedule</Text>
+
+        <View style={styles.scheduleContainer}>
+
+          <View style={styles.scheduleItem}>
+
+            <Text style={styles.label}>Date</Text>
+
+            <TouchableOpacity
+              style={styles.scheduleButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+
+              <Text style={styles.scheduleIcon}>📅</Text>
+
+              <Text style={styles.scheduleText}>
+                {formatDate(date)}
+              </Text>
+
+            </TouchableOpacity>
+
+          </View>
+
+          <View style={styles.scheduleItem}>
+
+            <Text style={styles.label}>Time</Text>
+
+            <TouchableOpacity
+              style={styles.scheduleButton}
+              onPress={() => setShowTimePicker(true)}
+            >
+
+              <Text style={styles.scheduleIcon}>🕒</Text>
+
+              <Text style={styles.scheduleText}>
+                {formatTime(time)}
+              </Text>
+
+            </TouchableOpacity>
+
+          </View>
+
+        </View>
+
+        {showDatePicker && (
+
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+
+              setShowDatePicker(false);
+
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+
+            }}
+          />
+
+        )}
+
+        {showTimePicker && (
+
+          <DateTimePicker
+            value={time}
+            mode="time"
+            display="default"
+            onChange={(event, selectedTime) => {
+
+              setShowTimePicker(false);
+
+              if (selectedTime) {
+                setTime(selectedTime);
+              }
+
+            }}
+          />
+
+        )}
+
+      </View>
 
       {/* Category */}
-      <Text style={styles.label}>Category</Text>
+      <View style={styles.section}>
 
-      <View style={styles.optionContainer}>
+        <Text style={styles.sectionTitle}>Category</Text>
 
-        {['Study', 'Work', 'Personal', 'Other'].map(item => (
+        <View style={styles.optionContainer}>
 
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.option,
-              category === item && styles.selectedOption
-            ]}
-            onPress={() => setCategory(item)}
-          >
+          {categories.map(item => (
 
-            <Text style={[
-              styles.optionText,
-              category === item && styles.selectedOptionText
-            ]}>
-              {item}
-            </Text>
+            <TouchableOpacity
+              key={item.name}
+              style={[
+                styles.categoryOption,
+                category === item.name && styles.selectedCategory
+              ]}
+              onPress={() => setCategory(item.name)}
+            >
 
-          </TouchableOpacity>
+              <Text style={styles.categoryIcon}>{item.icon}</Text>
 
-        ))}
+              <Text style={[
+                styles.optionText,
+                category === item.name && styles.selectedOptionText
+              ]}>
+                {item.name}
+              </Text>
+
+            </TouchableOpacity>
+
+          ))}
+
+        </View>
 
       </View>
 
       {/* Priority */}
-      <Text style={styles.label}>Priority</Text>
+      <View style={styles.section}>
 
-      <View style={styles.optionContainer}>
+        <Text style={styles.sectionTitle}>Priority</Text>
 
-        {['Low', 'Medium', 'High'].map(item => (
+        <View style={styles.priorityContainer}>
 
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.option,
-              priority === item && styles.selectedOption
-            ]}
-            onPress={() => setPriority(item)}
-          >
+          {priorities.map(item => (
 
-            <Text style={[
-              styles.optionText,
-              priority === item && styles.selectedOptionText
-            ]}>
-              {item}
-            </Text>
+            <TouchableOpacity
+              key={item.name}
+              style={[
+                styles.priorityOption,
+                {
+                  backgroundColor: priority === item.name
+                    ? item.background
+                    : '#FFFFFF',
+                  borderColor: priority === item.name
+                    ? item.color
+                    : '#E7E7EF'
+                }
+              ]}
+              onPress={() => setPriority(item.name)}
+            >
 
-          </TouchableOpacity>
+              <View style={[
+                styles.priorityDot,
+                { backgroundColor: item.color }
+              ]} />
 
-        ))}
+              <Text style={[
+                styles.priorityText,
+                {
+                  color: priority === item.name
+                    ? item.color
+                    : '#66667A'
+                }
+              ]}>
+                {item.name}
+              </Text>
+
+            </TouchableOpacity>
+
+          ))}
+
+        </View>
 
       </View>
 
-      {/* Save / Update Button */}
+      {/* Save Button */}
       <TouchableOpacity
         style={styles.saveButton}
         onPress={saveTask}
+        activeOpacity={0.8}
       >
 
         <Text style={styles.saveButtonText}>
-          {initialTask ? 'Update Task' : 'Save Task'}
+          {initialTask ? '✓  Update Task' : '+  Save Task'}
         </Text>
 
       </TouchableOpacity>
+
+      <Text style={styles.footerText}>
+        Keep planning. Keep progressing.
+      </Text>
 
     </ScrollView>
 
@@ -310,35 +400,77 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#F5F6FC',
+  },
+
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    paddingBottom: 25,
+  },
+
+  header: {
+    marginBottom: 20,
+  },
+
+  headerIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: '#E8E7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+
+  headerIconText: {
+    fontSize: 25,
+    color: '#4F46E5',
+    fontWeight: 'bold',
   },
 
   title: {
-    fontSize: 28,
+    fontSize: 27,
     fontWeight: 'bold',
     color: '#4F46E5',
-    marginTop: 20,
   },
 
   subtitle: {
-    color: '#777777',
-    marginTop: 5,
+    fontSize: 13,
+    color: '#77778A',
+    marginTop: 6,
+  },
+
+  section: {
+    backgroundColor: '#FFFFFF',
+    padding: 17,
+    borderRadius: 15,
     marginBottom: 15,
   },
 
-  label: {
-    fontSize: 14,
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 7,
-    color: '#333333',
+    color: '#29293D',
+    marginBottom: 12,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#55556A',
+    marginTop: 10,
+    marginBottom: 8,
   },
 
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F7F7FB',
+    borderWidth: 1,
+    borderColor: '#EEEEF4',
     padding: 13,
-    borderRadius: 9,
-    fontSize: 14,
+    borderRadius: 10,
+    fontSize: 13,
+    color: '#29293D',
   },
 
   descriptionInput: {
@@ -346,46 +478,121 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
 
+  scheduleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  scheduleItem: {
+    width: '48%',
+  },
+
+  scheduleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7F7FB',
+    borderWidth: 1,
+    borderColor: '#EEEEF4',
+    padding: 12,
+    borderRadius: 10,
+  },
+
+  scheduleIcon: {
+    fontSize: 16,
+    marginRight: 7,
+  },
+
+  scheduleText: {
+    fontSize: 11,
+    color: '#44445A',
+    fontWeight: '500',
+  },
+
   optionContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 
-  option: {
-    backgroundColor: '#E5E7EB',
-    paddingVertical: 10,
-    paddingHorizontal: 13,
-    borderRadius: 8,
-    marginRight: 8,
-    marginBottom: 8,
+  categoryOption: {
+    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7F7FB',
+    borderWidth: 1,
+    borderColor: '#EEEEF4',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 9,
   },
 
-  selectedOption: {
-    backgroundColor: '#4F46E5',
+  selectedCategory: {
+    backgroundColor: '#EEEEFF',
+    borderColor: '#4F46E5',
+  },
+
+  categoryIcon: {
+    fontSize: 17,
+    marginRight: 9,
   },
 
   optionText: {
-    color: '#444444',
+    fontSize: 13,
+    color: '#55556A',
+    fontWeight: '500',
   },
 
   selectedOptionText: {
-    color: '#FFFFFF',
+    color: '#4F46E5',
+    fontWeight: 'bold',
+  },
+
+  priorityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  priorityOption: {
+    width: '31%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+
+  priorityDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+
+  priorityText: {
+    fontSize: 12,
     fontWeight: 'bold',
   },
 
   saveButton: {
     backgroundColor: '#4F46E5',
-    padding: 15,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 25,
-    marginBottom: 35,
+    marginTop: 8,
   },
 
   saveButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  footerText: {
+    fontSize: 11,
+    color: '#9999A8',
+    textAlign: 'center',
+    marginTop: 15,
   },
 
 });
