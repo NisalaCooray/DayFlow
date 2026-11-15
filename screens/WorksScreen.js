@@ -19,6 +19,7 @@ export default function WorksScreen({
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState('All');
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date();
@@ -34,7 +35,7 @@ export default function WorksScreen({
     return task.date <= todayDate;
   });
 
-  // Search and filter tasks
+  // Search, status and category filters
   const filteredTasks = visibleTasks.filter(task => {
 
     const matchesSearch = task.title
@@ -46,7 +47,11 @@ export default function WorksScreen({
       (filter === 'Pending' && !task.completed) ||
       (filter === 'Completed' && task.completed);
 
-    return matchesSearch && matchesFilter;
+    const matchesCategory =
+      categoryFilter === 'All' ||
+      task.category === categoryFilter;
+
+    return matchesSearch && matchesFilter && matchesCategory;
 
   });
 
@@ -233,6 +238,10 @@ export default function WorksScreen({
       />
 
       {/* Status Filters */}
+      <Text style={styles.filterHeading}>
+        Task Status
+      </Text>
+
       <View style={styles.filters}>
 
         {['All', 'Pending', 'Completed'].map(option => (
@@ -250,6 +259,39 @@ export default function WorksScreen({
               style={[
                 styles.filterText,
                 filter === option && styles.activeFilterText,
+              ]}
+            >
+              {option}
+            </Text>
+
+          </TouchableOpacity>
+
+        ))}
+
+      </View>
+
+      {/* Category Filters */}
+      <Text style={styles.filterHeading}>
+        Filter by Category
+      </Text>
+
+      <View style={styles.categoryFilters}>
+
+        {['All', 'Study', 'Work', 'Personal', 'Other'].map(option => (
+
+          <TouchableOpacity
+            key={option}
+            style={[
+              styles.categoryFilterButton,
+              categoryFilter === option && styles.activeCategoryFilter,
+            ]}
+            onPress={() => setCategoryFilter(option)}
+          >
+
+            <Text
+              style={[
+                styles.categoryFilterText,
+                categoryFilter === option && styles.activeCategoryFilterText,
               ]}
             >
               {option}
@@ -282,7 +324,7 @@ export default function WorksScreen({
             </Text>
 
             <Text style={styles.emptyText}>
-              Try changing your search or filter.
+              Try changing your search or filters.
             </Text>
 
           </View>
@@ -363,10 +405,17 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 
+  filterHeading: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#555',
+    marginBottom: 9,
+  },
+
   filters: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
   filterButton: {
@@ -388,6 +437,37 @@ const styles = StyleSheet.create({
   },
 
   activeFilterText: {
+    color: '#FFFFFF',
+  },
+
+  // Category Filter Styles
+
+  categoryFilters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+
+  categoryFilterButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    backgroundColor: '#E8E9F2',
+    borderRadius: 9,
+    alignItems: 'center',
+  },
+
+  activeCategoryFilter: {
+    backgroundColor: '#4F46E5',
+  },
+
+  categoryFilterText: {
+    color: '#555',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+
+  activeCategoryFilterText: {
     color: '#FFFFFF',
   },
 
