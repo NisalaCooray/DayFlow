@@ -24,6 +24,7 @@ export default function AddWorkScreen({
 
   const [category, setCategory] = useState('Study');
   const [priority, setPriority] = useState('Medium');
+  const [repeat, setRepeat] = useState('None');
 
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
@@ -40,6 +41,7 @@ export default function AddWorkScreen({
       setDescription(initialTask.description || '');
       setCategory(initialTask.category || 'Study');
       setPriority(initialTask.priority || 'Medium');
+      setRepeat(initialTask.repeat || 'None');
 
       const taskDate = new Date(`${initialTask.date}T00:00:00`);
       const taskTime = new Date(`2000-01-01T${initialTask.time || '00:00'}:00`);
@@ -90,6 +92,7 @@ export default function AddWorkScreen({
     setPriority('Medium');
     setDate(new Date());
     setTime(new Date());
+    setRepeat('None');
 
   };
 
@@ -111,6 +114,7 @@ export default function AddWorkScreen({
       description: description.trim(),
       category,
       priority,
+      repeat,
       date: formatDate(date),
       time: formatTime(time),
 
@@ -286,6 +290,39 @@ export default function AddWorkScreen({
           />
 
         )}
+
+      </View>
+
+      {/* Repeat */}
+      <View style={styles.section}>
+
+        <Text style={styles.sectionTitle}>Repeat</Text>
+
+        <View style={styles.repeatContainer}>
+
+          {['None', 'Daily', 'Weekly'].map(item => (
+
+            <TouchableOpacity
+              key={item}
+              style={[
+                styles.repeatOption,
+                repeat === item && styles.selectedRepeat
+              ]}
+              onPress={() => setRepeat(item)}
+            >
+
+              <Text style={[
+                styles.repeatText,
+                repeat === item && styles.selectedRepeatText
+              ]}>
+                {item}
+              </Text>
+
+            </TouchableOpacity>
+
+          ))}
+
+        </View>
 
       </View>
 
@@ -593,6 +630,36 @@ const styles = StyleSheet.create({
     color: '#9999A8',
     textAlign: 'center',
     marginTop: 15,
+  },
+  repeatContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  repeatOption: {
+    width: '31%',
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E7E7EF',
+    backgroundColor: '#FFFFFF',
+  },
+
+  selectedRepeat: {
+    backgroundColor: '#EEEEFF',
+    borderColor: '#4F46E5',
+  },
+
+  repeatText: {
+    fontSize: 13,
+    color: '#66667A',
+    fontWeight: '500',
+  },
+
+  selectedRepeatText: {
+    color: '#4F46E5',
+    fontWeight: 'bold',
   },
 
 });

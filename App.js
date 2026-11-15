@@ -109,17 +109,89 @@ export default function App() {
     setActiveScreen('Add');
 
   };
+  // Calculate the next recurring task date
+  const getNextDate = (dateString, days) => {
+
+    const nextDate = new Date(`${dateString}T00:00:00`);
+
+    nextDate.setDate(nextDate.getDate() + days);
+
+    const year = nextDate.getFullYear();
+    const month = String(nextDate.getMonth() + 1).padStart(2, '0');
+    const day = String(nextDate.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+
+  };
 
   // Complete or uncomplete a task
   const toggleTask = (taskId) => {
 
-    setTasks(previousTasks =>
-      previousTasks.map(task =>
+    setTasks(previousTasks => {
+
+      const currentTask = previousTasks.find(
+        task => task.id === taskId
+      );
+
+      if (!currentTask) {
+        return previousTasks;
+      }
+
+      // Undo completion
+      if (currentTask.completed) {
+
+        return previousTasks.map(task =>
+          task.id === taskId
+            ? { ...task, completed: false }
+            : task
+        );
+
+      }
+
+      // Mark task as completed
+      const isRecurring =
+        currentTask.repeat === 'Daily' ||
+        currentTask.repeat === 'Weekly';
+
+      const updatedTasks = previousTasks.map(task =>
         task.id === taskId
-          ? { ...task, completed: !task.completed }
+          ? {
+              ...task,
+              completed: true,
+              nextOccurrenceCreated: isRecurring
+                ? true
+                : task.nextOccurrenceCreated
+            }
           : task
-      )
-    );
+      );
+
+      // Normal task: no new task needed
+      if (!isRecurring || currentTask.nextOccurrenceCreated) {
+        return updatedTasks;
+      }
+
+      // Calculate the next date
+      const daysToAdd =
+        currentTask.repeat === 'Daily' ? 1 : 7;
+
+      const nextTask = {
+
+        ...currentTask,
+
+        id: `${Date.now()}-next`,
+
+        date: getNextDate(currentTask.date, daysToAdd),
+
+        completed: false,
+
+        nextOccurrenceCreated: false,
+
+      };
+
+      // Add the next occurrence
+      return [...updatedTasks, nextTask];
+
+    });
 
   };
 

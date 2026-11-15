@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+
 import {
   View,
   Text,
@@ -15,10 +16,27 @@ export default function WorksScreen({
   onDeleteTask,
   onEditTask,
 }) {
+
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
 
-  const filteredTasks = tasks.filter(task => {
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+
+  const todayDate = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0')
+  ].join('-');
+
+  // Show only tasks scheduled for today or earlier
+  const visibleTasks = tasks.filter(task => {
+    return task.date <= todayDate;
+  });
+
+  // Search and filter tasks
+  const filteredTasks = visibleTasks.filter(task => {
+
     const matchesSearch = task.title
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -29,15 +47,27 @@ export default function WorksScreen({
       (filter === 'Completed' && task.completed);
 
     return matchesSearch && matchesFilter;
+
   });
 
-  const pendingCount = tasks.filter(task => !task.completed).length;
-  const completedCount = tasks.filter(task => task.completed).length;
+  // Summary counts
+  const pendingCount = visibleTasks.filter(
+    task => !task.completed
+  ).length;
 
+  const completedCount = visibleTasks.filter(
+    task => task.completed
+  ).length;
+
+  // Render each task
   const renderTask = ({ item }) => (
+
     <View style={styles.taskCard}>
+
       <View style={styles.taskHeader}>
+
         <View style={styles.taskInfo}>
+
           <Text
             style={[
               styles.taskTitle,
@@ -50,41 +80,63 @@ export default function WorksScreen({
           <Text style={styles.taskDate}>
             {item.date}  •  {item.time}
           </Text>
+
         </View>
 
         <View
           style={[
             styles.statusBadge,
-            item.completed ? styles.completedBadge : styles.pendingBadge,
+            item.completed
+              ? styles.completedBadge
+              : styles.pendingBadge,
           ]}
         >
+
           <Text
             style={[
               styles.statusText,
-              item.completed ? styles.completedStatus : styles.pendingStatus,
+              item.completed
+                ? styles.completedStatus
+                : styles.pendingStatus,
             ]}
           >
             {item.completed ? 'Completed' : 'Pending'}
           </Text>
+
         </View>
+
       </View>
 
       <View style={styles.tagRow}>
-        <Text style={styles.categoryTag}>{item.category}</Text>
+
+        <Text style={styles.categoryTag}>
+          {item.category}
+        </Text>
+
         <Text style={styles.priorityTag}>
           {item.priority} Priority
         </Text>
+
+        {item.repeat && item.repeat !== 'None' && (
+          <Text style={styles.repeatTag}>
+            🔁 {item.repeat}
+          </Text>
+        )}
+
       </View>
 
       {item.description ? (
+
         <Text style={styles.description}>
           {item.description}
         </Text>
+
       ) : null}
 
       <View style={styles.divider} />
 
       <View style={styles.buttons}>
+
         <TouchableOpacity
           style={styles.editButton}
           onPress={() => onEditTask(item)}
@@ -107,38 +159,71 @@ export default function WorksScreen({
         >
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
+
       </View>
+
     </View>
+
   );
 
   return (
+
     <View style={styles.container}>
+
       <Text style={styles.heading}>My Works</Text>
+
       <Text style={styles.subtitle}>
         Manage and track all your daily tasks.
       </Text>
 
+      {/* Summary Cards */}
       <View style={styles.summaryRow}>
+
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryNumber}>{tasks.length}</Text>
-          <Text style={styles.summaryLabel}>Total Tasks</Text>
+
+          <Text style={styles.summaryNumber}>
+            {visibleTasks.length}
+          </Text>
+
+          <Text style={styles.summaryLabel}>
+            Total Tasks
+          </Text>
+
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={[styles.summaryNumber, styles.pendingNumber]}>
+
+          <Text style={[
+            styles.summaryNumber,
+            styles.pendingNumber
+          ]}>
             {pendingCount}
           </Text>
-          <Text style={styles.summaryLabel}>Pending</Text>
+
+          <Text style={styles.summaryLabel}>
+            Pending
+          </Text>
+
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={[styles.summaryNumber, styles.completedNumber]}>
+
+          <Text style={[
+            styles.summaryNumber,
+            styles.completedNumber
+          ]}>
             {completedCount}
           </Text>
-          <Text style={styles.summaryLabel}>Completed</Text>
+
+          <Text style={styles.summaryLabel}>
+            Completed
+          </Text>
+
         </View>
+
       </View>
 
+      {/* Search */}
       <TextInput
         style={styles.search}
         placeholder="Search your tasks..."
@@ -147,8 +232,11 @@ export default function WorksScreen({
         onChangeText={setSearch}
       />
 
+      {/* Status Filters */}
       <View style={styles.filters}>
+
         {['All', 'Pending', 'Completed'].map(option => (
+
           <TouchableOpacity
             key={option}
             style={[
@@ -157,6 +245,7 @@ export default function WorksScreen({
             ]}
             onPress={() => setFilter(option)}
           >
+
             <Text
               style={[
                 styles.filterText,
@@ -165,14 +254,19 @@ export default function WorksScreen({
             >
               {option}
             </Text>
+
           </TouchableOpacity>
+
         ))}
+
       </View>
 
+      {/* Task List Heading */}
       <Text style={styles.sectionTitle}>
         Your Tasks ({filteredTasks.length})
       </Text>
 
+      {/* Task List */}
       <FlatList
         data={filteredTasks}
         keyExtractor={item => String(item.id)}
@@ -180,19 +274,30 @@ export default function WorksScreen({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
+
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No tasks found</Text>
+
+            <Text style={styles.emptyTitle}>
+              No tasks found
+            </Text>
+
             <Text style={styles.emptyText}>
               Try changing your search or filter.
             </Text>
+
           </View>
+
         }
       />
+
     </View>
+
   );
+
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#F5F6FC',
@@ -362,6 +467,7 @@ const styles = StyleSheet.create({
 
   tagRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginTop: 12,
   },
@@ -379,6 +485,16 @@ const styles = StyleSheet.create({
   priorityTag: {
     backgroundColor: '#F1F1F1',
     color: '#666',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 7,
+    fontSize: 11,
+    overflow: 'hidden',
+  },
+
+  repeatTag: {
+    backgroundColor: '#E8F4FF',
+    color: '#2672B8',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 7,
@@ -450,4 +566,5 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 7,
   },
+
 });
